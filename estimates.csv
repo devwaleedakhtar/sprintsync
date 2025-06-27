@@ -1,0 +1,10 @@
+#,task,estimate,actual time,status,notes
+1, Initial project setup, 1h, -, "Pending", Initial skeleton
+2, Backend: Auth (JWT), 1h, -, "Pending", APIs for Auth with JWT
+3, Backend: APIs for Tasks, 1h, -, "Pending", APIs for Tasks
+4, Backend: AI Endpoints, 2h, -, "Pending", APIs for /ai/suggest
+5, Frontend: Auth UI + Integration, 2h, -, "Pending", Auth flow with JWT
+6, Frontend: Task UI + Integration, 2h, -, "Pending", Task UI + Integration
+7, Frontend: Integrate /ai/suggest, 1h, -, "Pending", Integrate /ai/suggest
+8, Seed data script, 1h, -, "Pending", Script for seeding data
+9, Deployment on DigitalOcean, 2h, -, "Pending", Dockerize the project and deploy on DigitalOcean
