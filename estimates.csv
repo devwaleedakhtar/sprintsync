@@ -1,5 +1,5 @@
 #,task,estimate,actual time,status,notes
-1, Initial project setup, 1h, -, "Pending", Initial skeleton
+1, Initial project setup, 1h, ~42 minutes, "Pending", Initial skeleton
 2, Backend: Auth (JWT), 1h, -, "Pending", APIs for Auth with JWT
 3, Backend: APIs for Tasks, 1h, -, "Pending", APIs for Tasks
 4, Backend: AI Endpoints, 2h, -, "Pending", APIs for /ai/suggest
