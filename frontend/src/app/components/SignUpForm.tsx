@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import api from "@/app/lib/api";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -31,7 +32,7 @@ export default function SignUpForm() {
     setSuccess("");
     setLoading(true);
     try {
-      await axios.post(`${backendUrl}/auth/register`, {
+      await api.post(`${backendUrl}/auth/register`, {
         email: data.email,
         first_name: data.firstName,
         last_name: data.lastName,

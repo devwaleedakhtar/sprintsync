@@ -29,10 +29,10 @@ def get_task(db: DbSession, task_id: UUID, current_user: CurrentUser):
 
 
 @router.put("/{task_id}", response_model=models.TaskResponse)
-def update_task(db: DbSession, task_id: UUID, task_update: models.TaskCreate, current_user: CurrentUser):
-    return service.update_task(current_user, db, task_id, task_update)
+def update_task(db: DbSession, task_id: UUID, task_update: models.TaskUpdate, current_user: CurrentUser, background_tasks: BackgroundTasks):
+    return service.update_task(current_user, db, task_id, task_update, background_tasks)
 
 
 @router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_task(db: DbSession, task_id: UUID, current_user: CurrentUser):
-    service.delete_task(current_user, db, task_id)
+def delete_task(db: DbSession, task_id: UUID, current_user: CurrentUser, background_tasks: BackgroundTasks):
+    service.delete_task(current_user, db, task_id, background_tasks)

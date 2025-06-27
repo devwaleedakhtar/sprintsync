@@ -22,3 +22,10 @@ class TaskResponse(TaskBase):
     updated_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc))
     model_config = ConfigDict(from_attributes=True)
+
+
+class TaskUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    total_minutes: Optional[int] = None
+    status: Optional[Status] = None

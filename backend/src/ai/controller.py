@@ -27,12 +27,9 @@ async def suggest(suggest_request: SuggestRequest, current_user: CurrentUser):
 async def get_daily_plan(
     current_user: CurrentUser,
     db: DbSession,
-    date: dt_date = Query(
-        default=None, description="Date for the daily plan (YYYY-MM-DD)")
 ):
-    plan_date = date or dt_date.today()
     user_id = current_user.get_uuid()
-    daily_plan = await get_daily_plan_for_user(user_id, db, plan_date)
+    daily_plan = await get_daily_plan_for_user(user_id, db)
     if not daily_plan:
         raise HTTPException(status_code=404, detail="Daily plan not found.")
     return DailyPlanResponse(

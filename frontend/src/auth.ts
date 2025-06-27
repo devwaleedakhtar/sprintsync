@@ -1,6 +1,6 @@
 import NextAuth, { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import axios from "axios";
+import api from "@/app/lib/api";
 
 const backendUrl = process.env.BACKEND_URL || "http://localhost:8000";
 
@@ -33,16 +33,14 @@ const config: NextAuthConfig = {
           params.append("username", String(credentials.email));
           params.append("password", String(credentials.password));
 
-          const loginRes = await axios.post(
-            `${backendUrl}/auth/login`,
-            params,
-            { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
-          );
+          const loginRes = await api.post(`${backendUrl}/auth/login`, params, {
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          });
           const { access_token } = loginRes.data;
           if (!access_token) return null;
 
           // 2. Fetch user profile
-          const userRes = await axios.get(`${backendUrl}/users/me`, {
+          const userRes = await api.get(`${backendUrl}/users/me`, {
             headers: { Authorization: `Bearer ${access_token}` },
           });
           const user = userRes.data;
