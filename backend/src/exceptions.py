@@ -12,16 +12,6 @@ class UserNotFoundError(UserError):
         super().__init__(status_code=404, detail=message)
 
 
-class PasswordMismatchError(UserError):
-    def __init__(self):
-        super().__init__(status_code=400, detail="New passwords do not match")
-
-
-class InvalidPasswordError(UserError):
-    def __init__(self):
-        super().__init__(status_code=401, detail="Current password is incorrect")
-
-
 class AuthenticationError(HTTPException):
     def __init__(self, message: str = "Could not validate user"):
         super().__init__(status_code=401, detail=message)
