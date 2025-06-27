@@ -2,7 +2,7 @@
 1, Initial project setup, 1h, ~42 minutes, "Completed", Initial skeleton
 2, Backend: Auth (JWT), 1h, ~1h 10 minutes, "Completed", APIs for Auth with JWT
 3, Backend: APIs for Tasks, 1h, ~50 minutes, "Completed", APIs for Tasks
-4, Backend: AI Endpoints, 2h, -, "Pending", APIs for /ai/suggest
+4, Backend: AI Endpoints, 2h, ~2h 20 minutes, "Completed", APIs for /ai/suggest
 5, Frontend: Auth UI + Integration, 2h, -, "Pending", Auth flow with JWT
 6, Frontend: Task UI + Integration, 2h, -, "Pending", Task UI + Integration
 7, Frontend: Integrate /ai/suggest, 1h, -, "Pending", Integrate /ai/suggest

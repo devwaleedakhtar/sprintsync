@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, BackgroundTasks
 from typing import List
 from uuid import UUID
 
@@ -14,8 +14,8 @@ router = APIRouter(
 
 
 @router.post("/", response_model=models.TaskResponse, status_code=status.HTTP_201_CREATED)
-def create_task(db: DbSession, task: models.TaskCreate, current_user: CurrentUser):
-    return service.create_task(current_user, db, task)
+def create_task(db: DbSession, task: models.TaskCreate, current_user: CurrentUser, background_tasks: BackgroundTasks):
+    return service.create_task(current_user, db, task, background_tasks)
 
 
 @router.get("/", response_model=List[models.TaskResponse])

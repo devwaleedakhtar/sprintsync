@@ -1,15 +1,17 @@
 from datetime import datetime, timezone
-from uuid import uuid4, UUID
+from uuid import UUID
 from sqlalchemy.orm import Session
-from fastapi import HTTPException
+from fastapi import BackgroundTasks
 from . import models
 from src.auth.models import TokenData
 from src.entities.task import Task
 from src.exceptions import TaskCreationError, TaskNotFoundError
+from src.ai.service import generate_daily_plan_for_user
 import logging
+from src.entities.daily_plan import DailyPlan
 
 
-def create_task(current_user: TokenData, db: Session, task: models.TaskCreate) -> Task:
+def create_task(current_user: TokenData, db: Session, task: models.TaskCreate, background_tasks: BackgroundTasks = None) -> Task:
     try:
         new_task = Task(**task.model_dump())
         new_task.user_id = current_user.get_uuid()
@@ -17,6 +19,10 @@ def create_task(current_user: TokenData, db: Session, task: models.TaskCreate) -
         db.commit()
         db.refresh(new_task)
         logging.info(f"Created new task for user: {current_user.get_uuid()}")
+        # Trigger background plan generation
+        if background_tasks is not None:
+            background_tasks.add_task(
+                generate_and_save_daily_plan, current_user.get_uuid(), db)
         return new_task
     except Exception as e:
         logging.error(
@@ -59,3 +65,16 @@ def delete_task(current_user: TokenData, db: Session, task_id: UUID) -> None:
     db.delete(task)
     db.commit()
     logging.info(f"Task {task_id} deleted by user {current_user.get_uuid()}")
+
+
+async def generate_and_save_daily_plan(user_id, db):
+    # Get today's tasks for the user
+    today = datetime.now(timezone.utc).date()
+    tasks = db.query(Task).filter(Task.user_id == user_id,
+                                  Task.created_at >= today).all()
+    plan = await generate_daily_plan_for_user(user_id, tasks)
+
+    db.add(DailyPlan(user_id=user_id, date=today, plan=plan))
+    db.commit()
+
+    logging.info(f"Generated and saved daily plan for user {user_id}")
