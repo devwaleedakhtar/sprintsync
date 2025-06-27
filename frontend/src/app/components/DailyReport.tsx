@@ -11,10 +11,12 @@ interface DailyPlan {
   plan: string;
 }
 
-const backendUrl =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+interface DailyReportProps {
+  refreshKey: number;
+  triggerRefresh: () => void;
+}
 
-export default function DailyReport() {
+export default function DailyReport({ refreshKey }: DailyReportProps) {
   const { data: session } = useSession();
   const accessToken = (session?.user as UserProfile)?.accessToken;
   const [report, setReport] = useState<DailyPlan | null>(null);
@@ -22,19 +24,26 @@ export default function DailyReport() {
   const [error, setError] = useState("");
   const [collapsed, setCollapsed] = useState(false);
 
-  useEffect(() => {
+  const fetchAgenda = () => {
     if (!accessToken) {
       setLoading(false);
       return;
     }
     api
-      .get(`${backendUrl}/ai/daily-plan`, {
+      .get("/ai/daily-plan", {
         headers: { Authorization: `Bearer ${accessToken}` },
       })
       .then((res) => setReport(res.data))
       .catch(() => setError("Could not fetch daily agenda."))
       .finally(() => setLoading(false));
-  }, [accessToken]);
+  };
+
+  useEffect(() => {
+    fetchAgenda();
+    const interval = setInterval(fetchAgenda, 10000);
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accessToken, refreshKey]);
 
   if (!report) return undefined;
 

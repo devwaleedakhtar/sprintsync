@@ -9,7 +9,11 @@ import TaskItem, { Task } from "./TaskItem";
 const backendUrl =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
-export default function TasksList() {
+interface TasksListProps {
+  onTaskChange: () => void;
+}
+
+export default function TasksList({ onTaskChange }: TasksListProps) {
   const { data: session } = useSession();
   const accessToken = (session?.user as UserProfile)?.accessToken;
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -59,6 +63,7 @@ export default function TasksList() {
               onTaskCreated={() => {
                 setShowModal(false);
                 fetchTasks();
+                onTaskChange();
               }}
             />
           </div>
@@ -76,8 +81,14 @@ export default function TasksList() {
             <TaskItem
               key={task.id}
               task={task}
-              onTaskUpdated={fetchTasks}
-              onTaskDeleted={fetchTasks}
+              onTaskUpdated={() => {
+                fetchTasks();
+                onTaskChange();
+              }}
+              onTaskDeleted={() => {
+                fetchTasks();
+                onTaskChange();
+              }}
             />
           ))}
         </ul>
