@@ -16,6 +16,8 @@ interface TaskFormInputs {
   total_minutes: number;
 }
 
+const PRESET_MINUTES = [15, 30, 45, 60, 90, 120];
+
 export default function TaskForm({
   onTaskCreated,
 }: {
@@ -36,6 +38,7 @@ export default function TaskForm({
   const description = watch("description");
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState("");
+  const totalMinutes = watch("total_minutes");
 
   const onSubmit = async (data: TaskFormInputs) => {
     setError("");
@@ -185,6 +188,24 @@ export default function TaskForm({
         >
           Estimated Minutes
         </label>
+        <div className="flex gap-2 mb-2 flex-wrap">
+          {PRESET_MINUTES.map((min) => (
+            <button
+              type="button"
+              key={min}
+              className={`px-3 py-1 rounded border text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+                Number(totalMinutes) === min
+                  ? "bg-blue-600 text-white border-blue-600"
+                  : "bg-white text-blue-700 border-blue-200 hover:bg-blue-50"
+              }`}
+              onClick={() =>
+                setValue("total_minutes", min, { shouldValidate: true })
+              }
+            >
+              {min < 60 ? `${min} min` : `${min / 60} hr${min > 60 ? "s" : ""}`}
+            </button>
+          ))}
+        </div>
         <input
           id="total_minutes"
           type="number"

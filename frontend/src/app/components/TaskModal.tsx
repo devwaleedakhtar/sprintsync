@@ -7,10 +7,13 @@ import {
   PencilSquareIcon,
   TrashIcon,
   XMarkIcon,
+  SparklesIcon,
 } from "@heroicons/react/24/outline";
 import type { Task } from "./TaskItem";
+import ReactMarkdown from "react-markdown";
 
 const statusOptions = ["Todo", "In Progress", "Done"];
+const PRESET_MINUTES = [15, 30, 45, 60, 90, 120];
 
 interface TaskModalProps {
   task: Task;
@@ -30,11 +33,15 @@ export default function TaskModal({
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState<string | string[]>("");
   const [loading, setLoading] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string>("");
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
+    setValue,
+    watch,
   } = useForm<Omit<Task, "id" | "created_at" | "updated_at">>({
     defaultValues: {
       title: task.title,
@@ -84,6 +91,8 @@ export default function TaskModal({
     }
   };
 
+  const totalMinutes = watch ? watch("total_minutes") : undefined;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md relative animate-fade-in">
@@ -120,6 +129,75 @@ export default function TaskModal({
                 className="w-full px-3 py-2 border rounded min-h-[80px]"
                 placeholder="Description"
               />
+              <div className="flex items-center gap-2 mt-2">
+                <button
+                  type="button"
+                  className="flex items-center gap-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-full shadow-lg hover:from-blue-600 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-60 transition text-sm font-semibold"
+                  onClick={async () => {
+                    setAiError("");
+                    setAiLoading(true);
+                    try {
+                      const title = (
+                        document.querySelector(
+                          'input[name="title"]'
+                        ) as HTMLInputElement
+                      )?.value;
+                      if (!title) {
+                        setAiError("Please enter a title first.");
+                        setAiLoading(false);
+                        return;
+                      }
+                      const response = await fetch(
+                        `${api.defaults.baseURL}/ai/suggest`,
+                        {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${accessToken}`,
+                          },
+                          body: JSON.stringify({ title }),
+                        }
+                      );
+                      if (!response.body) throw new Error("No response body");
+                      const reader = response.body.getReader();
+                      let result = "";
+                      while (true) {
+                        const { value, done } = await reader.read();
+                        if (done) break;
+                        result += new TextDecoder().decode(value);
+                        // Extract only the chunk after 'data: '
+                        const matches = result.match(/data: ([^\n]*)/g);
+                        let text = "";
+                        if (matches) {
+                          text = matches
+                            .map((m) => m.replace("data: ", ""))
+                            .join("");
+                        }
+                        // Set the markdown description
+                        (
+                          document.querySelector(
+                            'textarea[name="description"]'
+                          ) as HTMLTextAreaElement
+                        ).value = text;
+                        // Also update react-hook-form state
+                        setValue("description", text, { shouldValidate: true });
+                      }
+                    } catch {
+                      setAiError("Failed to generate description");
+                    } finally {
+                      setAiLoading(false);
+                    }
+                  }}
+                  disabled={aiLoading}
+                  aria-label="Generate description with AI"
+                >
+                  <SparklesIcon className="w-5 h-5 mr-1" />
+                  {aiLoading ? "Generating..." : "AI"}
+                </button>
+                {aiError && (
+                  <div className="text-red-500 text-xs mt-1">{aiError}</div>
+                )}
+              </div>
               {errors.description && (
                 <span className="text-red-500 text-xs">
                   {errors.description.message}
@@ -130,6 +208,26 @@ export default function TaskModal({
               <label className="block text-sm font-medium mb-1">
                 Estimated Minutes
               </label>
+              <div className="flex gap-2 mb-2 flex-wrap">
+                {PRESET_MINUTES.map((min) => (
+                  <button
+                    type="button"
+                    key={min}
+                    className={`px-3 py-1 rounded border text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+                      Number(totalMinutes) === min
+                        ? "bg-blue-600 text-white border-blue-600"
+                        : "bg-white text-blue-700 border-blue-200 hover:bg-blue-50"
+                    }`}
+                    onClick={() =>
+                      setValue("total_minutes", min, { shouldValidate: true })
+                    }
+                  >
+                    {min < 60
+                      ? `${min} min`
+                      : `${min / 60} hr${min > 60 ? "s" : ""}`}
+                  </button>
+                ))}
+              </div>
               <input
                 type="number"
                 min={1}
@@ -193,8 +291,8 @@ export default function TaskModal({
                 </span>
               )}
             </div>
-            <div className="mb-4 whitespace-pre-line text-gray-700 text-sm">
-              {task.description}
+            <div className="mb-4 text-gray-700 text-sm prose prose-blue max-w-none">
+              <ReactMarkdown>{task.description}</ReactMarkdown>
             </div>
             <div className="text-xs text-gray-400 mb-4">
               Created: {new Date(task.created_at).toLocaleString()}
