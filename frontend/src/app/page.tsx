@@ -1,5 +1,4 @@
 "use client";
-import DailyReport from "./components/DailyReport";
 import TasksList from "./components/TasksList";
 import { useCallback } from "react";
 
