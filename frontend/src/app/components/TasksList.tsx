@@ -4,7 +4,8 @@ import api from "@/app/lib/api";
 import { useEffect, useState, useCallback } from "react";
 import type { UserProfile } from "@/auth";
 import TaskForm from "./TaskForm";
-import TaskItem, { Task } from "./TaskItem";
+import { Task } from "./TaskItem";
+import KanbanBoard from "./KanbanBoard";
 
 const backendUrl =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
@@ -40,7 +41,7 @@ export default function TasksList({ onTaskChange }: TasksListProps) {
   }, [fetchTasks]);
 
   return (
-    <section className="w-full max-w-2xl mx-auto">
+    <section className="w-full max-w-6xl mx-auto">
       <h2 className="text-xl font-bold mb-4">Your Tasks</h2>
       <button
         className="mb-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
@@ -76,22 +77,13 @@ export default function TasksList({ onTaskChange }: TasksListProps) {
       ) : tasks.length === 0 ? (
         <div className="text-gray-600">No tasks found.</div>
       ) : (
-        <ul className="space-y-4">
-          {tasks.map((task) => (
-            <TaskItem
-              key={task.id}
-              task={task}
-              onTaskUpdated={() => {
-                fetchTasks();
-                onTaskChange();
-              }}
-              onTaskDeleted={() => {
-                fetchTasks();
-                onTaskChange();
-              }}
-            />
-          ))}
-        </ul>
+        <KanbanBoard
+          tasks={tasks}
+          onTaskUpdated={() => {
+            fetchTasks();
+            onTaskChange();
+          }}
+        />
       )}
     </section>
   );
