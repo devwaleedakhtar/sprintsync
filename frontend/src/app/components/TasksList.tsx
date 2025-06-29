@@ -80,7 +80,7 @@ export default function TasksList({ onTaskChange }: TasksListProps) {
             </button>
             {showModal && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm transition-all">
-                <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md relative animate-fade-in">
+                <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md relative animate-fade-in h-[80vh] overflow-y-auto">
                   <button
                     className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-2xl font-bold focus:outline-none focus:ring-2 focus:ring-blue-400 rounded-full transition"
                     onClick={() => setShowModal(false)}

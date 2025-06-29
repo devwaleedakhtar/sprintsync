@@ -7,6 +7,7 @@ from .models import SuggestRequest, DailyPlanResponse
 from .service import ai_suggest_stream, get_daily_plan_for_user, stream_generate_and_save_daily_plan, get_all_daily_plans_for_user
 from src.auth.service import CurrentUser
 from datetime import date as dt_date
+import base64
 
 router = APIRouter(
     prefix="/ai",
@@ -18,8 +19,8 @@ router = APIRouter(
 async def suggest(suggest_request: SuggestRequest, current_user: CurrentUser):
     async def event_stream():
         async for chunk in ai_suggest_stream(suggest_request, current_user):
-            # Format as Server-Sent Events (SSE)
-            yield f"data: {chunk}\n\n"
+            encoded = base64.b64encode(chunk.encode('utf-8')).decode('utf-8')
+            yield f"data: {encoded}\n\n"
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 
 

@@ -6,6 +6,7 @@ import axios from "axios";
 import { useState } from "react";
 import type { UserProfile } from "@/auth";
 import { SparklesIcon } from "@heroicons/react/24/outline";
+import ReactMarkdown from "react-markdown";
 
 const backendUrl =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
@@ -39,6 +40,7 @@ export default function TaskForm({
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState("");
   const totalMinutes = watch("total_minutes");
+  const [descTab, setDescTab] = useState<"source" | "preview">("source");
 
   const onSubmit = async (data: TaskFormInputs) => {
     setError("");
@@ -88,18 +90,18 @@ export default function TaskForm({
       });
       if (!response.body) throw new Error("No response body");
       const reader = response.body.getReader();
-      let result = "";
+      let buffer = "";
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
-        result += new TextDecoder().decode(value);
-        // Extract only the chunk after 'data: '
-        const matches = result.match(/data: ([^\n]*)/g);
-        let text = "";
-        if (matches) {
-          text = matches.map((m) => m.replace("data: ", "")).join("");
-        }
-        setValue("description", text, { shouldValidate: true });
+        const chunk = new TextDecoder().decode(value);
+        chunk.split("\n").forEach((line) => {
+          if (line.startsWith("data: ")) {
+            const b64 = line.replace("data: ", "");
+            if (b64.trim()) buffer += atob(b64);
+          }
+        });
+        setValue("description", buffer, { shouldValidate: true });
       }
     } catch {
       setAiError("Failed to generate description");
@@ -152,27 +154,63 @@ export default function TaskForm({
         >
           Description
         </label>
-        <div className="relative">
-          <textarea
-            id="description"
-            {...register("description", {
-              required: "Description is required.",
-            })}
-            value={description}
-            className="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-base transition min-h-[96px] resize-vertical pr-16"
-            aria-describedby="generate-ai-desc"
-          />
+        <div className="mb-2 flex border-b border-gray-200">
           <button
             type="button"
-            className="absolute top-3 right-3 flex items-center gap-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-full shadow-lg hover:from-blue-600 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-60 transition text-sm font-semibold"
-            onClick={generateDescription}
-            disabled={aiLoading}
-            aria-label="Generate description with AI"
-            id="generate-ai-desc"
+            className={`px-4 py-2 -mb-px border-b-2 transition text-sm font-semibold focus:outline-none ${
+              descTab === "source"
+                ? "border-blue-600 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-blue-600"
+            }`}
+            onClick={() => setDescTab("source")}
           >
-            <SparklesIcon className="w-5 h-5 mr-1" />
-            {aiLoading ? "Generating..." : "AI"}
+            Source
           </button>
+          <button
+            type="button"
+            className={`px-4 py-2 -mb-px border-b-2 transition text-sm font-semibold focus:outline-none ${
+              descTab === "preview"
+                ? "border-blue-600 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-blue-600"
+            }`}
+            onClick={() => setDescTab("preview")}
+          >
+            Preview
+          </button>
+        </div>
+        <div className="relative">
+          {descTab === "source" ? (
+            <>
+              <textarea
+                id="description"
+                {...register("description", {
+                  required: "Description is required.",
+                })}
+                value={description}
+                className="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-base transition min-h-[96px] resize-vertical pr-16 font-mono"
+                aria-describedby="generate-ai-desc"
+              />
+              <button
+                type="button"
+                className="absolute top-3 right-3 flex items-center gap-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-full shadow-lg hover:from-blue-600 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-60 transition text-sm font-semibold"
+                onClick={generateDescription}
+                disabled={aiLoading}
+                aria-label="Generate description with AI"
+                id="generate-ai-desc"
+              >
+                <SparklesIcon className="w-5 h-5 mr-1" />
+                {aiLoading ? "Generating..." : "AI"}
+              </button>
+            </>
+          ) : (
+            <div className="p-4 border rounded bg-gray-50 prose-sm max-w-none [&_h1]:text-lg [&_h2]:text-base [&_h3]:text-sm [&_h1]:mt-2 [&_h1]:mb-1 [&_h2]:mt-2 [&_h2]:mb-1 [&_h3]:mt-2 [&_h3]:mb-1">
+              {description ? (
+                <ReactMarkdown>{description}</ReactMarkdown>
+              ) : (
+                <span className="text-gray-400">Nothing to preview.</span>
+              )}
+            </div>
+          )}
         </div>
         {aiError && <div className="text-red-500 text-xs mt-1">{aiError}</div>}
         {errors.description && (

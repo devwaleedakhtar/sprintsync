@@ -16,17 +16,22 @@ load_dotenv()
 
 
 async def ai_suggest_stream(request: SuggestRequest, current_user: CurrentUser) -> AsyncGenerator[str, None]:
-    prompt = f"Draft a detailed task description for the following title: '{request.title}'. Return the description in markdown format. Only return the markdown, no other text."
+    prompt = (
+        f"Draft a detailed task description for the following title: '{request.title}'. "
+        f"Return the description as a well-formatted markdown document. "
+        f"Ensure there is a blank line between headings, paragraphs, and lists. "
+        f"Use markdown features such as headings, lists, and bold where appropriate. Only return the markdown, no other text."
+    )
     stream = await client.chat.completions.create(model="gpt-3.5-turbo",
                                                   messages=[
                                                       {"role": "user", "content": prompt}],
                                                   stream=True)
 
-    print(current_user)
     async for event in stream:
         # Only yield the content string
         if event.choices and event.choices[0].delta and event.choices[0].delta.content:
-            yield event.choices[0].delta.content
+            chunk = event.choices[0].delta.content or ""
+            yield chunk
 
 
 async def generate_daily_plan_for_user(user_id, tasks, db=None, daily_plan_id=None):

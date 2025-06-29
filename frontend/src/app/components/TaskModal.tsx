@@ -95,7 +95,7 @@ export default function TaskModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md relative animate-fade-in">
+      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md relative animate-fade-in max-h-[70vh] overflow-auto">
         <button
           className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-2xl font-bold focus:outline-none focus:ring-2 focus:ring-blue-400 rounded-full transition"
           onClick={onClose}
@@ -160,27 +160,27 @@ export default function TaskModal({
                       );
                       if (!response.body) throw new Error("No response body");
                       const reader = response.body.getReader();
-                      let result = "";
+                      let buffer = "";
                       while (true) {
                         const { value, done } = await reader.read();
                         if (done) break;
-                        result += new TextDecoder().decode(value);
-                        // Extract only the chunk after 'data: '
-                        const matches = result.match(/data: ([^\n]*)/g);
-                        let text = "";
-                        if (matches) {
-                          text = matches
-                            .map((m) => m.replace("data: ", ""))
-                            .join("");
-                        }
+                        const chunk = new TextDecoder().decode(value);
+                        chunk.split("\n").forEach((line) => {
+                          if (line.startsWith("data: ")) {
+                            const b64 = line.replace("data: ", "");
+                            if (b64.trim()) buffer += atob(b64);
+                          }
+                        });
                         // Set the markdown description
                         (
                           document.querySelector(
                             'textarea[name="description"]'
                           ) as HTMLTextAreaElement
-                        ).value = text;
+                        ).value = buffer;
                         // Also update react-hook-form state
-                        setValue("description", text, { shouldValidate: true });
+                        setValue("description", buffer, {
+                          shouldValidate: true,
+                        });
                       }
                     } catch {
                       setAiError("Failed to generate description");
@@ -292,7 +292,9 @@ export default function TaskModal({
               )}
             </div>
             <div className="mb-4 text-gray-700 text-sm prose prose-blue max-w-none">
-              <ReactMarkdown>{task.description}</ReactMarkdown>
+              <div className="prose-sm max-w-none [&_h1]:text-lg [&_h2]:text-base [&_h3]:text-sm [&_h1]:mt-2 [&_h1]:mb-1 [&_h2]:mt-2 [&_h2]:mb-1 [&_h3]:mt-2 [&_h3]:mb-1">
+                <ReactMarkdown>{task.description}</ReactMarkdown>
+              </div>
             </div>
             <div className="text-xs text-gray-400 mb-4">
               Created: {new Date(task.created_at).toLocaleString()}
