@@ -5,6 +5,9 @@ WORKDIR /app
 
 # Install dependencies
 COPY requirements.txt .
+COPY alembic.ini .
+COPY migrations/ migrations/
+
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the project files

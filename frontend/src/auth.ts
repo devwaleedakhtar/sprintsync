@@ -36,6 +36,7 @@ const config: NextAuthConfig = {
           const loginRes = await api.post(`${backendUrl}/auth/login`, params, {
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
           });
+
           const { access_token } = loginRes.data;
           if (!access_token) return null;
 
@@ -63,7 +64,14 @@ const config: NextAuthConfig = {
     strategy: "jwt",
     maxAge: 30 * 60, // 30 minutes
   },
+  pages: {
+    signIn: "/signin",
+  },
   callbacks: {
+    authorized: async ({ auth }) => {
+      // Logged in users are authenticated, otherwise redirect to login page
+      return !!auth;
+    },
     async jwt({ token, user }) {
       if (user && typeof user === "object") {
         token.user = user;
