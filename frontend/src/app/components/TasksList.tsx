@@ -99,11 +99,7 @@ export default function TasksList({ onTaskChange }: TasksListProps) {
                 </div>
               </div>
             )}
-            {!accessToken ? (
-              <div className="text-gray-600">
-                Please sign in to view your tasks.
-              </div>
-            ) : loading ? (
+            {loading ? (
               <div className="text-gray-500">Loading...</div>
             ) : tasks.length === 0 ? (
               <div className="text-gray-600">No tasks found.</div>

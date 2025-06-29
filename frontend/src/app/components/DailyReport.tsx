@@ -16,6 +16,13 @@ interface DailyReportProps {
   triggerRefresh: () => void;
 }
 
+// Utility to buffer only complete markdown blocks (render up to last newline)
+function getRenderableMarkdown(markdown: string) {
+  const lastNewline = markdown.lastIndexOf("\n");
+  if (lastNewline === -1) return "";
+  return markdown.slice(0, lastNewline + 1);
+}
+
 export default function DailyReport({ triggerRefresh }: DailyReportProps) {
   const { data: session } = useSession();
   const accessToken = (session?.user as UserProfile)?.accessToken;
@@ -118,12 +125,18 @@ export default function DailyReport({ triggerRefresh }: DailyReportProps) {
                 Generating...
               </span>
             </div>
-            <div className="text-sm prose prose-blue max-w-none">
-              <ReactMarkdown>{streamedPlan || "Generating..."}</ReactMarkdown>
+            <div className="text-sm prose prose-blue max-w-none relative">
+              <ReactMarkdown>
+                {getRenderableMarkdown(streamedPlan) || "Generating..."}
+              </ReactMarkdown>
+              {/* Animated ellipsis at the end while streaming */}
+              <span className="absolute -bottom-1 left-0 text-blue-400 animate-pulse text-lg select-none">
+                &nbsp;...
+              </span>
             </div>
           </div>
         )}
-        {loadingHistory ? (
+        {loadingHistory && !streaming ? (
           <div className="text-gray-500">Loading...</div>
         ) : error ? (
           <div className="text-red-500">{error}</div>
