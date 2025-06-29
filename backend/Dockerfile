@@ -7,6 +7,7 @@ WORKDIR /app
 COPY requirements.txt .
 COPY alembic.ini .
 COPY migrations/ migrations/
+COPY entrypoint.sh .
 
 RUN pip install --no-cache-dir -r requirements.txt
 

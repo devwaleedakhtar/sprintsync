@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .api import register_routes
-from .logging import configure_logging, LogLevels
+from .logger import configure_logging, LogLevels
 import os
 
 configure_logging(LogLevels.info)
@@ -10,9 +10,6 @@ configure_logging(LogLevels.info)
 app = FastAPI()
 
 APP_URL = os.getenv("APP_URL")
-
-print("APP_URL")
-print(APP_URL)
 
 app.add_middleware(
     CORSMiddleware,
