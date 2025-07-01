@@ -8,6 +8,7 @@ SprintSync is a project designed to streamline sprint planning, task management,
 
 - **Frontend:** [https://sprintsync-xi.vercel.app/](https://sprintsync-xi.vercel.app/)
 - **Swagger Docs:** [https://sprintsync-production.up.railway.app/docs](https://sprintsync-production.up.railway.app/docs)
+- **Demo Video:** [https://www.awesomescreenshot.com/video/41491038?key=87681fb892aabc55ff5754f0d69678e5](https://www.awesomescreenshot.com/video/41491038?key=87681fb892aabc55ff5754f0d69678e5)
 
 **Demo User:**
 
